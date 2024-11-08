@@ -1,0 +1,30 @@
+name: Create Release and Upload ZIP
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on any push with a tag that starts with 'v' (e.g., v1.0, v2.0)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Install zip (if not already installed)
+    - name: Install zip
+      run: sudo apt-get install zip
+
+    # Zip the folder you want to include in the release
+    - name: Create ZIP of folder
+      run: zip -r my_folder.zip ספרים
+
+    # Upload ZIP file as an asset to the release
+    - name: Upload ZIP to GitHub Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: my_folder.zip
+        tag: ${{ github.ref }}
