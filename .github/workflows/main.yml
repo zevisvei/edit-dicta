@@ -3,25 +3,49 @@ name: Create Release and Upload ZIP on Folder Change
 on:
   push:
     paths:
-      - 'ספרים/**'  # Trigger on changes in this folder and its subfolders
+      - 'ספרים/**'
 
 jobs:
-  build:
+  release_ספרים:
+    if: contains(github.event.head_commit.message, 'ספרים')
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Install zip
-      run: sudo apt-get install zip
+      - name: Install zip
+        run: sudo apt-get install zip
 
-    - name: Create ZIP of folder
-      run: zip -r ספרים.zip ספרים
+      - name: Get current version for ספרים
+        id: get_version
+        run: |
+          if [ -f ספרים_version.txt ]; then
+            version=$(cat ספרים_version.txt)
+          else
+            version=0
+          fi
+          echo $((version + 1)) > ספרים_version.txt
+          echo "version=$(cat ספרים_version.txt)" >> $GITHUB_ENV
 
-    - name: Upload ZIP to GitHub Release
-      uses: ncipollo/release-action@v1
-      with:
-        artifacts: ספרים.zip
-        tag: "release-${{ github.run_number }}"  # Use a tag that includes the run number or a custom value
-        token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create ZIP of ספרים folder
+        run: zip -r ספרים.zip ספרים
+
+      - name: Commit and push version update
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add ספרים_version.txt
+          git commit -m "Update ספרים version to ${version}"
+          git push
+
+      - name: Upload ZIP to GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: ספרים.zip
+          artifact_name: "ספרים-גרסה-${{ env.version }}.zip"  # שם הקובץ
+          tag: "v${{ env.version }}"
+          name: "ספרים - גרסה ${{ env.version }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Jobs נוספים עבור תיקיות אחרות (כגון תיקייה1 ותיקייה2) בצורה דומה
