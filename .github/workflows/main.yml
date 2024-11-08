@@ -10,22 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # Install zip (if not already installed)
     - name: Install zip
       run: sudo apt-get install zip
 
-    # Zip the folder you want to include in the release
     - name: Create ZIP of folder
       run: zip -r ספרים.zip ספרים
 
-    # Upload ZIP file as an asset to the release
     - name: Upload ZIP to GitHub Release
       uses: ncipollo/release-action@v1
       with:
         artifacts: ספרים.zip
-        tag: ${{ github.sha }}  # Use commit SHA for a unique tag
+        tag: ${{ github.sha }}
         token: ${{ secrets.GITHUB_TOKEN }}
+        skipIfReleaseExists: true  # Optional, to prevent errors if the release already exists
