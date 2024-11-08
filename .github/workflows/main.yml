@@ -23,6 +23,5 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: ספרים.zip
-        tag: ${{ github.sha }}
+        tag: "release-${{ github.run_number }}"  # Use a tag that includes the run number or a custom value
         token: ${{ secrets.GITHUB_TOKEN }}
-        skipIfReleaseExists: true  # Optional, to prevent errors if the release already exists
