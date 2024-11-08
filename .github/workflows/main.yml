@@ -28,3 +28,4 @@ jobs:
       with:
         artifacts: ספרים.zip
         tag: ${{ github.sha }}  # Use commit SHA for a unique tag
+        token: ${{ secrets.GITHUB_TOKEN }}
