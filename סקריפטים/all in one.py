@@ -165,5 +165,5 @@ def main(url, old_json_path, target, csv_file_path):
 url = r"https://raw.githubusercontent.com/Dicta-Israel-Center-for-Text-Analysis/Dicta-Library-Download/refs/heads/main/books.json"
 old_json_path = "old books.json"
 csv_file_path = "list.csv"
-target_path = os.path.join("..", "ספרים")
+target_path = os.path.join("..", "ספרים חדשים")
 main(url, old_json_path, target_path, csv_file_path)                

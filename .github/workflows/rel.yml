@@ -1,0 +1,66 @@
+name: Folder Change Tracker and Release
+
+on:
+  push:
+    paths:
+      - 'ערוך/**'  # Track changes in 'ערוך' folder
+      - 'לא ערוך/**'  # Track changes in 'לא ערוך' folder
+      - 'ספרים חדשים/**'  # Track changes in 'ספרים חדשים' folder
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check for changes in folders
+        id: folder_changes
+        run: |
+          # Check if any of the folders have changes
+          changed_folders=""
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q '^ערוך/'; then
+            changed_folders="ערוך"
+          fi
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q '^לא ערוך/'; then
+            changed_folders="${changed_folders} לא ערוך"
+          fi
+          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q '^ספרים חדשים/'; then
+            changed_folders="${changed_folders} ספרים חדשים"
+          fi
+          
+          echo "changed_folders=$changed_folders" >> $GITHUB_ENV
+
+      - name: Create separate zip files for each changed folder
+        if: env.changed_folders != ''
+        run: |
+          # Get the current timestamp for the zip file names
+          timestamp=$(date +'%Y-%m-%d_%H-%M-%S')
+
+          # Loop over the folders that have changes and create separate zip files
+          for folder in ${changed_folders}; do
+            # Create the zip file for each folder
+            zip_file_name="release_${folder// /_}_${timestamp}.zip"
+            zip -r $zip_file_name $folder
+
+            # Upload the zip file
+            echo "Uploading $zip_file_name"
+            mv $zip_file_name $GITHUB_WORKSPACE
+
+            # Upload zip files as artifacts
+            uses: actions/upload-artifact@v3
+            with:
+              name: release-zip-${folder}
+              path: $GITHUB_WORKSPACE/$zip_file_name
+          done
+
+      - name: Create GitHub release
+        if: env.changed_folders != ''
+        uses: gh action/create-release@v1
+        with:
+          tag_name: ${{ github.sha }}
+          release_name: 'Release for ${changed_folders} on ${timestamp}'
+          body: 'Release triggered by changes in: ${{ env.changed_folders }}.'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
