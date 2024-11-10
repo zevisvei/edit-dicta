@@ -6,6 +6,7 @@ on:
       - 'ערוך/**'  # Track changes in 'ערוך' folder
       - 'לא ערוך/**'  # Track changes in 'לא ערוך' folder
       - 'ספרים חדשים/**'  # Track changes in 'ספרים חדשים' folder
+  workflow_dispatch:  # Manually trigger the workflow
 
 jobs:
   create-release:
